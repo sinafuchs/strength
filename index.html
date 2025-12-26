@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tägliche Kraft</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fbe8e7, #fdf6f0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            max-width: 420px;
+            width: 100%;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            animation: fadeIn 1s ease;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 15px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+        }
+
+        input {
+            background: #f1f1f1;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message, .extra, .text {
+            margin-top: 15px;
+            color: #222;
+            font-size: 18px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .extra {
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card" id="login">
+    <h2>Willkommen 🌸</h2>
+    <p>Bitte gib dein Passwort ein</p>
+    <input type="password" id="password" placeholder="Passwort">
+    <button onclick="checkPassword()">Weiter</button>
+</div>
+
+<div class="card hidden" id="content">
+    <h2>Liebe Elisa ✨</h2>
+    <p class="text">Hier ist deine tägliche Portion Kraft</p>
+
+    <button onclick="loadMessage()">Heute lesen</button>
+
+    <div id="message" class="message"></div>
+
+
+    <br><br>
+
+        <button id="extraBtn" class="hidden" onclick="showExtra()">Extra Kraft</button>
+
+    <div id="extra" class="extra"></div>
+
+    <br><br><br><br>
+
+    <p class="text">Heute doch lieber ein Witz?</p>
+    <button onclick="loadJoke()">bring mich zum lachen</button>
+
+
+
+
+    <div id="joke" class="message" style="margin-top: 60px;"></div>
+</div>
+
+<script>
+    const PASSWORD = "Kraft";
+    let todayData = null;
+
+    function checkPassword() {
+        const pw = document.getElementById("password").value;
+        if (pw === PASSWORD) {
+            document.getElementById("login").classList.add("hidden");
+            document.getElementById("content").classList.remove("hidden");
+        } else {
+            alert("Das Passwort stimmt nicht 💛");
+        }
+    }
+
+    async function loadMessage() {
+        const msgEl = document.getElementById("message");
+        try {
+            let data;
+
+            const embedded = document.getElementById('texte-json');
+            if (embedded && embedded.textContent.trim()) {
+                data = JSON.parse(embedded.textContent);
+            } else {
+                throw new Error('Embedded JSON not found');
+            }
+
+            const today = new Date();
+            const todayStr =
+                String(today.getDate()).padStart(2, "0") + "." +
+                String(today.getMonth() + 1).padStart(2, "0") + "." +
+                today.getFullYear();
+
+            console.log('Heute berechnet als:', todayStr);
+            console.log('texte.json Einträge:', data);
+
+            todayData = data.find(d => d.datum === todayStr);
+
+            if (todayData) {
+                msgEl.innerText = todayData.text;
+                if (todayData.extra) document.getElementById("extraBtn").classList.remove("hidden");
+            } else {
+                msgEl.innerText = "Für heute wartet noch keine Nachricht auf dich 💛";
+                document.getElementById("extraBtn").classList.add("hidden");
+            }
+        } catch (err) {
+            console.error(err);
+            msgEl.innerText = 'Fehler beim Laden der Texte: ' + err.message;
+        }
+    }
+
+    function showExtra() {
+        if (todayData?.extra) {
+            document.getElementById("extra").innerText = todayData.extra;
+        }
+    }
+
+    async function loadJoke() {
+        const jokeEl = document.getElementById("joke");
+        try {
+            let data;
+
+            const embedded = document.getElementById('texte-json');
+            if (embedded && embedded.textContent.trim()) {
+                data = JSON.parse(embedded.textContent);
+            } else {
+                throw new Error('Embedded JSON not found');
+            }
+
+            const today = new Date();
+            const todayStr =
+                String(today.getDate()).padStart(2, "0") + "." +
+                String(today.getMonth() + 1).padStart(2, "0") + "." +
+                today.getFullYear();
+
+            console.log('Heute berechnet als:', todayStr);
+            console.log('texte.json Einträge:', data);
+
+            todayData = data.find(d => d.datum === todayStr);
+
+            if (todayData && todayData.joke) {
+                jokeEl.innerText = todayData.joke;
+            } else {
+                jokeEl.innerText = "Für heute wartet noch kein Witz auf dich 😂";
+            }
+        } catch (err) {
+            console.error(err);
+            jokeEl.innerText = 'Fehler beim Laden der Texte: ' + err.message;
+        }
+    }
+</script>
+
+<script type="application/json" id="texte-json">
+[
+  { "datum": "26.12.2025", "text": "Du bist stärker, als du denkst.", "extra": "Manchmal reicht es, einfach weiterzuatmen – auch das ist Stärke.", "joke": "Warum klettert der Pilz auf den Baum? Weil er ein Champignon ist, der hoch hinaus will!" },
+  { "datum": "27.12.2025", "text": "Du darfst langsam sein. Wichtig ist, dass du gehst.", "extra": "Heute musst du nichts beweisen. Du bist genug.", "joke": "Treffen sich zwei Magneten. Fragt der eine: 'Warum so angezogen?' Sagt der andere: 'Weil du mich einfach anziehst!'" },
+  { "datum": "28.12.2025", "text": "Kleine Schritte sind immer noch Schritte. Jeder zählt.", "extra": "Erinnere dich: Halt suchen ist Mut, nicht Schwäche.", "joke": "Was macht ein Pirat am Computer? Er drückt die Enter-Taste!" },
+  { "datum": "29.12.2025", "text": "Dein Körper kennt Wege zur Heilung — vertrau ihm ein Stück.", "extra": "Sei geduldig mit dir, so wie du es mit einer Freundin wärst.", "joke": "Warum können Geister so schlecht lügen? Weil man durch sie hindurchsehen kann!" },
+  { "datum": "30.12.2025", "text": "Heute atmen, heute fühlen, heute bleiben — immer ein bisschen leichter.", "extra": "Ein Moment der Ruhe kann die Richtung ändern.", "joke": "Warum sind Fische so schlechte Tennisspieler? Sie haben Angst vor dem Netz!" },
+  { "datum": "31.12.2025", "text": "Am Ende eines Jahres: Du hast überlebt. Das allein ist triumphal.", "extra": "Feiere dich still — du bist durch so viel gegangen.", "joke": "Ich habe meiner Uhr einen Witz erzählt… Jetzt tickt sie vor Lachen!" },
+  { "datum": "01.01.2026", "text": "Neues Jahr, gleiche Stärke in dir. Du darfst neu beginnen.", "extra": "Ein Atemzug, ein neuer Tag — Schritt für Schritt.", "joke": "Warum konnte der Leopard nicht verstecken? Weil er immer gepunktet war!" },
+  { "datum": "02.01.2026", "text": "Dein Mut ist kein lauter Trommelwirbel, sondern ein leises Weitermachen.", "extra": "Halte fest, was dir Kraft schenkt.", "joke": "Treffen sich zwei Tomaten auf der Strasse. Sagt die eine: 'Pass auf, da kommt ein Auto!' Die andere: 'Keine Sorge, ich bin Ketchup.'" },
+  { "datum": "03.01.2026", "text": "Heute ist ein Tag für kleine Siege.", "extra": "Jeder davon bringt dich näher zu dir selbst.", "joke": "Warum können Skelette keine Party machen? Sie haben niemanden, der mit ihnen tanzt!" },
+  { "datum": "04.01.2026", "text": "Du bist nicht allein in diesem Kampf.", "extra": "Lass dich halten, wenn du müde bist.", "joke": "Warum gehen Bäume nie ins Kino? Sie sitzen immer nur in den Ästen." },
+  { "datum": "05.01.2026", "text": "Dein Körper arbeitet für dich, auch wenn du es nicht merkst.", "extra": "Vertrau seiner Weisheit.", "joke": "Was macht ein Keks unter einem Baum? Krümel!" },
+  { "datum": "06.01.2026", "text": "Manchmal ist Ausruhen die mutigste Entscheidung.", "extra": "Pausen sind Teil des Weges.", "joke": "Warum nehmen Huhn und Ei niemals den Bus? Sie würden sonst den Fahrplan durchbrechen!" },
+  { "datum": "07.01.2026", "text": "Es ist okay, schwach zu sein. Das macht dich menschlich.", "extra": "Sanftheit ist Stärke.", "joke": "Warum können Geister keine Lügen erzählen? Man sieht sie sofort durchschauen!" },
+  { "datum": "08.01.2026", "text": "Die Sonne geht auf – auch für dich.", "extra": "Nimm das Licht in dich auf.", "joke": "Warum ist das Mathebuch traurig? Es hat zu viele Probleme!" },
+  { "datum": "09.01.2026", "text": "Du bist dein sicherer Ort.", "extra": "Kehre immer wieder zu dir zurück.", "joke": "Treffen sich zwei Würstchen. Sagt das eine: 'Ich glaube, wir sind im Hot Dog!'" },
+  { "datum": "10.01.2026", "text": "Narben erzählen von Überleben.", "extra": "Sie sind Zeichen deiner Kraft.", "joke": "Warum können Bienen so gut rechnen? Sie summen die Zahlen!" },
+  { "datum": "11.01.2026", "text": "Heilung geschieht leise.", "extra": "Hab Geduld mit deinem Tempo.", "joke": "Warum haben Pilze gute Laune? Sie sind einfach ein lustiger Champignon!" },
+  { "datum": "12.01.2026", "text": "Ein kleiner Schritt genügt für heute.", "extra": "Du darfst langsam gehen.", "joke": "Warum können Elefanten nicht am Computer arbeiten? Zu viele Maustasten!" },
+  { "datum": "13.01.2026", "text": "Du bist mehr als deine Zweifel.", "extra": "Vertrau dem Teil in dir, der weiss.", "joke": "Ich habe meinem Bett einen Witz erzählt. Es hat mich sofort zugedeckt vor Lachen!" },
+  { "datum": "14.01.2026", "text": "Mut zeigt sich oft im Stillen.", "extra": "Er ist da, auch wenn du ihn kaum spürst.", "joke": "Warum gehen Geister nie in Restaurants? Sie wollen nicht so leicht durchfallen!" },
+  { "datum": "15.01.2026", "text": "Wenn alles schwer ist, halte dich an das, was bleibt.", "extra": "Liebe, Atem, Hoffnung.", "joke": "Was macht ein Keks am Strand? Krümel suchen!" },
+  { "datum": "16.01.2026", "text": "Heute darfst du langsamer sein.", "extra": "Dein Tempo ist richtig.", "joke": "Warum hat der Pilz einen Regenschirm? Weil er keinen Schimmel will!" },
+  { "datum": "17.01.2026", "text": "Du trägst mehr Kraft in dir, als du ahnst.", "extra": "Sie zeigt sich leise.", "joke": "Warum ging der Computer zum Arzt? Er hatte einen Virus!" },
+  { "datum": "18.01.2026", "text": "Manchmal heilt Zeit, manchmal Nähe.", "extra": "Beides darf sein.", "joke": "Warum können Geister keine Lügen erzählen? Sie sind durchscheinend ehrlich!" },
+  { "datum": "19.01.2026", "text": "Du gehst weiter, auch wenn es schwerfällt.", "extra": "Das ist Mut.", "joke": "Warum konnte der Geier keinen Witz erzählen? Er hatte keinen Humor im Magen!" },
+  { "datum": "20.01.2026", "text": "Heute darfst du freundlich zu dir sein.", "extra": "Das verändert mehr, als du denkst.", "joke": "Warum hat der Stift gute Laune? Er malt sich die Welt, wie sie ihm gefällt!" },
+  { "datum": "21.01.2026", "text": "Du bist mehr als dieser Moment.", "extra": "Er geht vorüber.", "joke": "Was macht ein Pilz im Supermarkt? Er sucht ein Champignon-Angebot!" },
+  { "datum": "22.01.2026", "text": "Dein Licht bleibt, auch wenn es flackert.", "extra": "Vertrau darauf.", "joke": "Warum sind Bienen schlechte Geheimnisträger? Sie plaudern immer aus dem Bienenstock!" },
+  { "datum": "23.01.2026", "text": "Du darfst innehalten.", "extra": "Stillstand ist kein Rückschritt.", "joke": "Warum kann der Baum nicht ins Kino? Weil er sich nicht von den Wurzeln trennen kann!" },
+  { "datum": "24.01.2026", "text": "Fehler machen dich menschlich.", "extra": "Und genau das macht dich wertvoll.", "joke": "Warum gehen Skelette nicht ins Kino? Sie haben niemanden, der mit ihnen lacht!" },
+  { "datum": "25.01.2026", "text": "Heute darfst du stolz auf dich sein.", "extra": "Auch kleine Schritte zählen.", "joke": "Warum gehen Geister nicht gern einkaufen? Sie haben Angst vor den Preisen!" },
+  { "datum": "26.01.2026", "text": "Leichtigkeit darf wiederkommen.", "extra": "Du musst sie nicht erzwingen.", "joke": "Warum lieben Pilze Partys? Weil sie immer für Stimmung sorgen!" },
+  { "datum": "27.01.2026", "text": "Du bist stärker, als du glaubst.", "extra": "Erinnere dich daran, wenn Zweifel kommen.", "joke": "Warum können Fische nicht trommeln? Sie haben keine Hände!" },
+  { "datum": "28.01.2026", "text": "Am Ende dieses Tages: Du hast es geschafft.", "extra": "Und morgen geht es weiter — behutsam.", "joke": "Warum konnte der Leopard nicht im Schach gewinnen? Er war immer gepunktet!" },
+  { "datum": "29.01.2026", "text": "Heute darfst du langsam atmen.", "extra": "Alles darf ruhig sein.", "joke": "Warum klettert die Katze auf den Baum? Um den Vogelwitz zu hören!" },
+  { "datum": "30.01.2026", "text": "Ein Lächeln ist ein kleiner Sieg.", "extra": "Es schenkt dir Kraft.", "joke": "Warum kann der Elefant nicht Computer spielen? Zu viele Tasten!" },
+  { "datum": "31.01.2026", "text": "Der Januar endet — du bist hier, und das ist viel.", "extra": "Nimm einen ruhigen Atem und würdige dich.", "joke": "Warum ging das Huhn über die Strasse? Um einen Witz zu erzählen!" },
+  { "datum": "01.02.2026", "text": "Der Februar beginnt mit Hoffnung und leisem Mut.", "extra": "Ein neuer Monat, ein neues Stück Heilung.", "joke": "Warum können Bienen gut rechnen? Sie summen die Zahlen!" },
+  { "datum": "02.02.2026", "text": "Heute: Erinnere dich an drei Dinge, die dir guttun.", "extra": "Kleine Rituale halten dich aufrecht.", "joke": "Warum ging die Tomate nicht über die Strasse? Sie wollte Ketchup vermeiden!" },
+  { "datum": "03.02.2026", "text": "Du bist zart und stark zugleich — ein wunderbares Paradox.", "extra": "Akzeptiere beide Seiten mit Mitgefühl.", "joke": "Warum gehen Geister nie zum Arzt? Sie wollen keine Röntgenstrahlen!" },
+  { "datum": "04.02.2026", "text": "An Tagen wie diesen geht es um Atem und einen Schritt mehr.", "extra": "Mehr ist nicht nötig; das genügt heute.", "joke": "Warum klettert der Pilz auf den Baum? Er wollte den Überblick behalten!" },
+  { "datum": "05.02.2026", "text": "Wenn die Angst kommt, atme sie aus und nimm Frieden an.", "extra": "Mut wächst, wenn du dranbleibst.", "joke": "Warum kochen Hühner nicht gern? Sie haben Angst vor dem Ei!" },
+  { "datum": "06.02.2026", "text": "Ein kleiner Blumenblick, ein heller Ton — das stärkt.", "extra": "Erfreue dich an einfachen Schönheiten.", "joke": "Warum war der Stift traurig? Weil ihm die Spitze fehlte!" },
+  { "datum": "07.02.2026", "text": "Dein Körper ist weise; er weiss, wie er Stück für Stück heilt.", "extra": "Vertraue den leisen Heilungswegen.", "joke": "Warum können Skelette nicht lügen? Sie haben kein Herz dafür!" },
+  { "datum": "08.02.2026", "text": "Heute: Erlaube dir zu sagen, was du brauchst.", "extra": "Deine Bedürfnisse sind wichtig und gelten.", "joke": "Warum ging der Apfel ins Fitnessstudio? Er wollte zum Kern kommen!" },
+  { "datum": "09.02.2026", "text": "Du bist wie das Meer: mal still, mal wild — immer stark genug.", "extra": "Deine Tiefe trägt dich durch Vieles.", "joke": "Warum können Fische nicht tanzen? Sie haben zwei linke Flossen!" },
+  { "datum": "10.02.2026", "text": "Manchmal ist eine Umarmung das Wirksamste — nimm sie an.", "extra": "Berührung heilt auf leise Weise.", "joke": "Warum gehen Pilze nie alleine spazieren? Sie mögen Gesellschaft!" },
+  { "datum": "11.02.2026", "text": "Heute: Ein Gedanke der Güte in deinen Tag gelegt.", "extra": "Güte dir gegenüber wirkt wie Balsam.", "joke": "Warum können Geister keine Haustiere haben? Sie durchschauen alles!" },
+  { "datum": "12.02.2026", "text": "Du darfst deine Schwächen zeigen — sie machen dich menschlich.", "extra": "Echtheit ist eine Stärke, keine Schwäche.", "joke": "Warum hat der Pilz gute Laune? Weil er Champignon ist!" },
+  { "datum": "13.02.2026", "text": "Wenn du erschöpft bist, ist das ein Zeichen, dass du gekämpft hast.", "extra": "Ehre deine Anstrengung heute.", "joke": "Warum ging der Computer zum Arzt? Er hatte einen Virus!" },
+  { "datum": "14.02.2026", "text": "Am Valentinstag: Liebe zuerst dich selbst — das ist Kraft.", "extra": "Eine zärtliche Geste für dein Herz.", "joke": "Warum können Fische so schlecht Karten spielen? Sie haben Angst vor der Krone!" },
+  { "datum": "15.02.2026", "text": "Deine Heilung ist wie ein zartes Lied, das langsam anstimmt.", "extra": "Höre genau hin; jeder Ton zählt.", "joke": "Warum tanzen Geister nicht gern? Sie treten immer durch alles hindurch!" },
+  { "datum": "16.02.2026", "text": "Heute erlaubt dir die Welt, langsam zu sein.", "extra": "Die Zeit ist auf deiner Seite.", "joke": "Warum ging die Tomate über die Strasse? Um Ketchup zu machen!" },
+  { "datum": "17.02.2026", "text": "Du bist mutig, auch wenn du es nicht fühlst — es ist da.", "extra": "Stütze dich auf das, was schon fest ist.", "joke": "Warum kann der Elefant nicht Tennis spielen? Er hat die falschen Schuhe!" },
+  { "datum": "18.02.2026", "text": "Es ist okay, Hilfe anzunehmen — gemeinsam geht vieles leichter.", "extra": "Vertraue Menschen, die dich halten wollen.", "joke": "Warum war der Baum traurig? Er fühlte sich entwurzelt!" },
+  { "datum": "19.02.2026", "text": "Heute ein kurzer Reim für dich:\nStark ist die, die leise weint;\nstark die, die wieder neu beginnt.", "extra": "Dein Neubeginn ist ein Mutzeichen.", "joke": "Warum können Skelette nicht streiten? Sie haben kein Rückgrat!" },
+  { "datum": "20.02.2026", "text": "Deine Grenzen achten heisst, dich zu schützen — tu das heute.", "extra": "Nein sagen ist manchmal das Grösste für dich.", "joke": "Warum ging der Computer auf Diät? Er wollte weniger Bytes!" },
+  { "datum": "21.02.2026", "text": "Ein Atemzug in der Stille kann Klarheit bringen.", "extra": "Nimm dir Zeit für diese Stille.", "joke": "Warum haben Pilze immer gute Laune? Sie sind einfach Champignons!" },
+  { "datum": "22.02.2026", "text": "Du darfst stolz sein auf jeden Schritt, auch den unscheinbaren.", "extra": "Stolz nährt die Seele.", "joke": "Warum können Geister kein Basketball spielen? Sie gehen immer durch den Korb!" },
+  { "datum": "23.02.2026", "text": "Heute ein Bild: Du wie eine Eiche — tief verwurzelt, standhaft.", "extra": "Wurzeln geben Halt, auch wenn der Wind weht.", "joke": "Warum ging der Apfel ins Fitnessstudio? Um seinen Kern zu stärken!" },
+  { "datum": "24.02.2026", "text": "Deine Stimme zählt — sag, was dich stärkt.", "extra": "Teile dein Bedürfnis mit Menschen, die zuhören.", "joke": "Warum können Fische nicht tanzen? Sie haben keine Füsse!" },
+  { "datum": "25.02.2026", "text": "Wenn du fällst, steh mit Mitgefühl wieder auf.", "extra": "Dein Mitgefühl ist ein zärtlicher Lehrer.", "joke": "Warum hat der Pilz Freunde? Er ist einfach ein Champignon!" },
+  { "datum": "26.02.2026", "text": "Heute: Ein kleiner Sieg — erkenne ihn und lächle.", "extra": "Sterne entstehen aus winzigen Funken.", "joke": "Warum ging das Huhn über die Strasse? Um den Witz zu erzählen!" },
+  { "datum": "27.02.2026", "text": "Du bist auf dem Weg; die Richtung verändert sich stetig zum Guten.", "extra": "Glaube an das Momentum in dir.", "joke": "Warum können Skelette keine Partys feiern? Sie haben niemanden, der mit ihnen tanzt!" },
+  { "datum": "28.02.2026", "text": "Du bist weitergekommen. Das ist stark.", "extra": "Trage diesen Satz in dir: Ich habe überlebt, ich wachse.", "joke": "Warum ging die Katze auf den Baum? Um den Vogelwitz zu hören!" }
+]
+</script>
+
+</body>
+</html>
